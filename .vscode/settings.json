@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "C:\\ProgramData\\Anaconda3\\envs\\deeplearning\\python.exe",
+    "python.pythonPath": "facerec\\Scripts\\python.exe",
     "editor.snippetSuggestions": "none",
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
