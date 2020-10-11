@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "facerec\\Scripts\\python.exe",
+    "python.pythonPath": "venv\\Scripts\\python.exe",
     "editor.snippetSuggestions": "none",
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,

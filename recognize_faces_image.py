@@ -1,58 +1,61 @@
+# python recognize_faces_image.py --encodings encodings.pickle --image examples/example_01.png
+
 import face_recognition
 import argparse
 import pickle
 import cv2
 
+from facerec.utils import load_image, get_face_data, to_bgr, recognize_face, annotate_image
+
 import logging
 import sys
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-ap = argparse.ArgumentParser()
-ap.add_argument("-e", "--encodings", required=True,
-                help="path to serialized db of facial encodings")
-ap.add_argument("-i", "--image", required=True, help="path to serialized db of facial encodings")
-ap.add_argument("-d", "--detection_method", type=str, default="cnn",
-                help="face detection model to use: either 'hog' or 'cnn'")
-args = vars(ap.parse_args())
 
-logging.info("Loadings encodings...")
-
-with open(args['encodings'], 'rb') as handle:
-    data = pickle.load(handle)
-
-image = cv2.imread(args["image"])
-rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-logging.info("Recognizing faces...")
-boxes = face_recognition.face_locations(rgb, model=args["detection_method"])
-encodings = face_recognition.face_encodings(rgb, boxes)
-
-names = []
-
-for encoding in encodings:
-
-    matches = face_recognition.compare_faces(data['encodings'], encoding)
-    name = "Unknown"
-
-    if True in matches:
-        matched_idxs = [i for (i, b) in enumerate(matches) if b]
-        counts = {}
-
-        for i in matched_idxs:
-            name = data["names"][i]
-            counts[name] = counts.get(name, 0) + 1
-
-        name = max(counts, key=counts.get)
-
-    names.append(name)
+def parse_args():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-e", "--encodings", required=True,
+                    help="path to serialized db of facial encodings")
+    ap.add_argument("-i", "--image", required=True,
+                    help="path to serialized db of facial encodings")
+    ap.add_argument("-d", "--detection_method", type=str, default="cnn",
+                    help="face detection model to use: either 'hog' or 'cnn'")
+    args = vars(ap.parse_args())
+    return args
 
 
-for ((top, right, bottom, left), name) in zip(boxes, names):
+def main():
+    args = parse_args()
 
-    cv2.rectangle(image, (left, top), (right, bottom), (0, 255, 0), 2)
-    y = top - 15 if top - 15 > 15 else top + 15
-    cv2.putText(image, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 0), 2)
+    logging.info("Loadings encodings...")
+
+    # encodings are our database of people
+    with open(args['encodings'], 'rb') as handle:
+        database = pickle.load(handle)
+
+    image_rgb = load_image(args['image'])
+
+    logging.info("Recognizing faces...")
+
+    # detect faces, get their encodings and get bounding box cords
+    boxes, encodings = get_face_data(image_rgb, args['detection_method'])
+
+    names = []
+
+    # for each face, try to recognize the person
+    for encoding in encodings:
+        name = recognize_face(encoding, database)
+        names.append(name)
+
+    # for cv2 image showing
+    image_bgr = to_bgr(image_rgb)
+
+    # put bounding boxes and names around the faces
+    image = annotate_image(image_bgr, boxes, names)
+
+    cv2.imshow("Image", image)
+    cv2.waitKey(0)
 
 
-cv2.imshow("Image", image)
-cv2.waitKey(0)
+if __name__ == "__main__":
+    main()
