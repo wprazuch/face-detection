@@ -1,4 +1,4 @@
-Face recognition
+### Face recognition
 
 This app demonstrates how to create a face recognition system based on publicly available deep learning models. The project contains a set of methods and modules,
 which enable the user to create a database of people (whose faces in different photos are being represented by an indentifier), which is then used for inference of new
