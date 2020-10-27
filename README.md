@@ -17,3 +17,4 @@ the person's identification is returned for that matching key.
 
 Streamlit was created for means of uploading photos to the system for face recognition.
 
+![Face Recognition](static/1.jpg)
